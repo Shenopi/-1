@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أختبر نفسك</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, #AF1C59, #6E59A2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-background {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            opacity: 0.2;
+            width: 300px;
+            height: auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            position: relative;
+            z-index: 3;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+            z-index: 3;
+        }
+
+        @media (min-width: 768px) {
+            .content {
+                flex-direction: row;
+            }
+        }
+
+        .wheel-container {
+            flex: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .wheel-canvas {
+            width: 300px;
+            height: 300px;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            margin: 0 auto;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheel-pointer {
+           position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%) rotate(180deg);
+            width: 30px;
+            height: 40px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            background-color: #333;
+            z-index: 10;
+            box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .spin-button {
+            margin-top: 30px;
+            padding: 12px 36px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: white;
+            color: #AF1C59;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .spin-button:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .spin-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .names-panel {
+            flex: 1;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .names-panel h2 {
+            color: #AF1C59;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid #6E59A2;
+            border-right: none;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .name-input:focus {
+            box-shadow: 0 0 0 3px rgba(175, 28, 89, 0.2);
+        }
+
+        .add-button {
+            padding: 12px 20px;
+            background-color: #6E59A2;
+            color: white;
+            border: none;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-button:hover {
+            background-color: #AF1C59;
+        }
+
+        .names-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #6E59A2;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .names-table thead {
+            background-color: #6E59A2;
+            color: white;
+        }
+
+        .names-table th, .names-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .names-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #AF1C59;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            color: #6E59A2;
+            transform: scale(1.2);
+        }
+
+        .clear-button {
+            width: 100%;
+            padding: 12px 0;
+            background-color: #AF1C59;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .clear-button:hover {
+            background-color: #6E59A2;
+        }
+
+        .names-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-container {
+            background-color: white;
+            border-left: 4px solid #AF1C59;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+            color: #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-container p {
+            font-size: 20px;
+        }
+
+        .result-container .winner-label {
+            font-weight: bold;
+            color: #AF1C59;
+        }
+
+        .bounce {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .winner-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            color: #AF1C59;
+            font-weight: bold;
+            font-size: 22px;
+            animation: bounce 1s infinite;
+        }
+
+        .question-container {
+            background-color: #AF1C59;
+            color: white;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-container h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Logo -->
+    <img src="logo.png" alt="Logo" class="logo-background">
+
+    <div class="container">
+        <h1>أختبر معلوماتك</h1>
+
+        <div class="content">
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheelCanvas" class="wheel-canvas" width="300" height="300"></canvas>
+                <div id="winnerPopup" class="winner-popup" style="display: none;"></div>
+                <button id="spinButton" class="spin-button">SPIN</button>
+            </div>
+
+            <div class="names-panel">
+			 <button id="toggleQuestionsBtn" style="position: absolute; top: 10px; right: 10px; background: #6E59A2; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Hide </button>
+                <h2>Question List</h2>
+                <div class="input-container">
+                    <input type="text" id="nameInput" class="name-input" placeholder="Add a question">
+                    <button id="addButton" class="add-button">Add</button>
+                </div>
+
+                <div class="names-list">
+                    <table class="names-table">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="namesTableBody">
+                            <!-- Names will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button id="clearButton" class="clear-button">Clear All</button>
+            </div>
+        </div>
+
+        <div id="resultContainer" class="result-container" style="display: none;">
+            <p><span class="winner-label">Selected Topic:</span> <span id="winnerDisplay"></span></p>
+        </div>
+
+        <div id="questionContainer" class="question-container">
+            <h3>Your Question:</h3>
+            <p id="questionDisplay" class="question-text"></p>
+        </div>
+    </div>
+
+    <script>
+	 const toggleQuestionsBtn = document.getElementById('toggleQuestionsBtn');
+    const namesList = document.querySelector('.names-list');
+    
+    toggleQuestionsBtn.addEventListener('click', function() {
+        if (namesList.style.display === 'none') {
+            namesList.style.display = '';
+            toggleQuestionsBtn.textContent = 'Hide';
+        } else {
+            namesList.style.display = 'none';
+            toggleQuestionsBtn.textContent = 'Hide';
+        }
+    });
+        // Initial questions/options
+        let names = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6', 'Option 7', 'Option 8', 'Option 9', 'Option 10' ];
+        let questions = []; // Store separate questions
+        let rotation = 0;
+        let spinning = false;
+        
+        // Colors for wheel segments - alternating between the requested colors
+        const colors = ['#AF1C59', '#6E59A2', '#AF1C59', '#6E59A2', '#AF1C59', '#6E59A2'];
+
+        // DOM Elements
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinButton = document.getElementById('spinButton');
+        const nameInput = document.getElementById('nameInput');
+        const addButton = document.getElementById('addButton');
+        const clearButton = document.getElementById('clearButton');
+        const namesTableBody = document.getElementById('namesTableBody');
+        const resultContainer = document.getElementById('resultContainer');
+        const winnerDisplay = document.getElementById('winnerDisplay');
+        const winnerPopup = document.getElementById('winnerPopup');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionDisplay = document.getElementById('questionDisplay');
+
+        // Initialize
+        function init() {
+            // Add default questions
+            questions = [
+                "ما معنى كلمة LASA?",
+                "كيف يتم التعرف على المريض؟",
+				"في اي يوم يكون يوم التمريض العالمي ؟",
+				"       أول ممرضة بالعالم؟   ",
+				"ما هي الأهداف العالمية لسلامة المرضى IPSG",
+				"ماهي الألوان المستخدمة في المستشفى لتمييز حالات العزل ؟",
+				"ماهو الرقم الذي تتصل به عند حدوث حريق بالمستشفى ؟",
+				"ماهي طرق الوقاية من الجلطات الوريدية؟",
+				"كيف يتم تخزين الادوية عالية الخطورة؟",
+				"من المسؤول عن وضع العلامة على الموقع المراد إجراء عليه عملية جراحيه و كيف يكون شكلها؟"
+				
+            ];
+            
+            drawWheel();
+            updateNamesList();
+            
+            // Event listeners
+            spinButton.addEventListener('click', spinWheel);
+            addButton.addEventListener('click', addName);
+            clearButton.addEventListener('click', clearAll);
+            nameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addName();
+                }
+            });
+
+            // Hide question container initially
+            questionContainer.style.display = 'none';
+        }
+
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (names.length === 0) {
+                // Draw empty wheel background
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#f0f0f0";
+                ctx.fill();
+                
+                // Add text
+                ctx.font = "20px Arial";
+                ctx.fillStyle = "#666";
+                ctx.textAlign = "center";
+                ctx.fillText("Add topics to create a wheel", centerX, centerY);
+                return;
+            }
+
+            const anglePerSegment = (Math.PI * 2) / names.length;
+
+            for (let i = 0; i < names.length; i++) {
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(
+                    centerX,
+                    centerY,
+                    radius,
+                    i * anglePerSegment,
+                    (i + 1) * anglePerSegment
+                );
+                ctx.closePath();
+
+                // Fill segment
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                
+                // Add stroke
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.stroke();
+
+                // Add name text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * anglePerSegment + anglePerSegment / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+
+                // Dynamic font sizing
+                const baseFontSize = 16;
+                ctx.font = `bold ${baseFontSize}px Arial`;
+                let textWidth = ctx.measureText(names[i]).width;
+                const maxTextWidth = radius * 0.7;
+
+                if (textWidth > maxTextWidth) {
+                    const shrinkRatio = maxTextWidth / textWidth;
+                    const newFontSize = Math.floor(baseFontSize * shrinkRatio);
+                    ctx.font = `bold ${newFontSize}px Arial`;
+                }
+
+                const textDistance = radius * 0.75;
+                
+                // Add text shadow for better readability
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 3;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                
+                ctx.fillText(names[i], textDistance, 5);
+                ctx.restore();
+            }
+
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#AF1C59';
+            ctx.stroke();
+            
+            // Draw inner circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#6E59A2';
+            ctx.fill();
+        }
+
+        // Update names list table
+        function updateNamesList() {
+            namesTableBody.innerHTML = '';
+            
+            if (names.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="2" style="text-align: center; color: #999;">No topics added yet</td>`;
+                namesTableBody.appendChild(row);
+                return;
+            }
+            
+            names.forEach((name, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td style="text-align: center;">
+                        <button class="delete-btn" data-index="${index}">✕</button>
+                    </td>
+                `;
+                namesTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeName(index);
+                });
+            });
+        }
+
+        // Add name
+        function addName() {
+            const name = nameInput.value.trim();
+            if (name !== '') {
+                names.push(name);
+                
+                // Also add to questions array
+                questions.push(name);
+                
+                nameInput.value = '';
+                drawWheel();
+                updateNamesList();
+            }
+        }
+
+        // Remove name
+        function removeName(index) {
+            names.splice(index, 1);
+            
+            // Also remove from questions if it exists
+            if (index < questions.length) {
+                questions.splice(index, 1);
+            }
+            
+            drawWheel();
+            updateNamesList();
+            hideResult();
+        }
+
+        // Clear all names
+        function clearAll() {
+            if (names.length > 0) {
+                if (confirm("Are you sure you want to clear all topics?")) {
+                    names = [];
+                    questions = [];
+                    drawWheel();
+                    updateNamesList();
+                    hideResult();
+                }
+            }
+        }
+
+        // Hide result
+        function hideResult() {
+            resultContainer.style.display = 'none';
+            winnerPopup.style.display = 'none';
+            questionContainer.style.display = 'none';
+        }
+
+
+        // Spin wheel
+        function spinWheel() {
+            if (names.length < 2) {
+                alert("Please add at least 2 topics to spin the wheel!");
+                return;
+            }
+
+            if (spinning) return;
+            spinning = true;
+            hideResult();
+
+            // Animation variables
+            let startAngle = rotation;
+            let currentAngle = rotation;
+            const spinAngle = 2 * Math.PI * (5 + Math.random() * 5); // 5-10 full rotations
+            const duration = 5000; // 5 seconds
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function for natural deceleration
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                currentAngle = startAngle + spinAngle * easeOut;
+                rotation = currentAngle; // Update global rotation
+                
+                // Apply rotation to canvas
+                canvas.style.transform = `rotate(${currentAngle}rad)`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation completed
+                    finishSpin(currentAngle);
+                }
+            }
+
+            function finishSpin(finalAngle) {
+                // Calculate winner
+                const normalizedAngle = finalAngle % (2 * Math.PI);
+                const segmentAngle = (2 * Math.PI) / names.length;
+                const winnerIndex = Math.floor(names.length - (normalizedAngle / segmentAngle) % names.length);
+                const adjustedIndex = winnerIndex % names.length;
+                const winner = names[adjustedIndex];
+
+                // Update UI
+                spinning = false;
+                spinButton.disabled = false;
+                spinButton.textContent = 'SPIN';
+
+                // Show winner
+                winnerDisplay.textContent = winner;
+                resultContainer.style.display = 'block';
+                winnerPopup.textContent = winner;
+                winnerPopup.style.display = 'block';
+
+                // Show random question if available
+                setTimeout(() => {
+                    winnerPopup.style.display = 'none';
+                    
+                    if (questions.length > 0) {
+                        const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+                        questionDisplay.textContent = randomQuestion;
+                        questionContainer.style.display = 'block';
+                    }
+                }, 2000);
+            }
+
+            // Start animation
+            spinButton.disabled = true;
+            spinButton.textContent = 'Spinning...';
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize app
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
